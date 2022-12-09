@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Pri.Identity.Api.Data;
 using Pri.Identity.Api.Entities;
+using System.Globalization;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -37,6 +38,26 @@ builder.Services.AddAuthentication(option =>
         ValidAudience = builder.Configuration["JWTConfiguration:Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWTConfiguration:SigningKey"]))
     };
+});
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("OnlyCitizensFromBruges", policy =>
+    {
+        policy.RequireClaim("city", new string[] { "brugge", "Brugge" });
+    }); 
+    options.AddPolicy("OnlyLoyalMembers", policy =>
+    {
+        policy.RequireAssertion(context =>
+        {
+            var registrationClaimValue = context.User.Claims.SingleOrDefault(c => c.Type == "registration-date")?.Value;
+            if (DateTime.TryParseExact(registrationClaimValue, "yy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out var registrationTime))
+            {
+                return registrationTime.AddYears(1) < DateTime.UtcNow;
+            }
+            return false;
+        });
+    });
 });
 
 var app = builder.Build();

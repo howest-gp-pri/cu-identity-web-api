@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Pri.Identity.Api.Data;
 using Pri.Identity.Api.Entities;
@@ -19,8 +18,6 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options => // AddIde
     options.SignIn.RequireConfirmedEmail = false;
 })
     .AddEntityFrameworkStores<ApplicationDbContext>();
-
-builder.Services.AddControllers();
 
 builder.Services.AddAuthentication(option =>
 {
@@ -59,7 +56,10 @@ builder.Services.AddAuthorization(options =>
         });
     });
 });
-
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+builder.Services.AddControllers();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -74,7 +74,8 @@ app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
-
+app.UseSwagger();
+app.UseSwaggerUI();
 app.MapControllers();
 
 app.Run();

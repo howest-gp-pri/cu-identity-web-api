@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 
 namespace Pri.Identity.Api.Controllers
 {
-    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class ProductsController : ControllerBase
@@ -20,21 +19,22 @@ namespace Pri.Identity.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Get()
+        [Authorize]
+        public IActionResult Get()
         {
             return Ok(products);
         }
 
         [HttpGet("loyalmembers")]
         [Authorize(Policy = "OnlyLoyalMembers")]
-        public async Task<IActionResult> GetProductsForLoyalMembers()
+        public IActionResult GetProductsForLoyalMembers()
         {
             return Ok("A list of products for our loyal members! Enjoy :-)");
         }
 
         [HttpPost]
         [Authorize(Roles ="Admin")]
-        public async Task<IActionResult> Post([FromBody] ProductDto productDto)
+        public IActionResult Post([FromBody] ProductDto productDto)
         {
             productDto.Id = Guid.NewGuid();
             products.Add(productDto);
